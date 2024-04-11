@@ -2,7 +2,7 @@ use std::io::Cursor;
 
 use adaptemoji::AdaptiveEmojiConvert;
 use image::imageops::FilterType;
-use image::{EncodableLayout, ImageFormat, ImageResult};
+use image::{ImageFormat, ImageResult};
 use teloxide::prelude::*;
 use teloxide::types::{Document, InputFile, InputMedia, InputMediaDocument};
 use tokio::io;
@@ -54,12 +54,11 @@ async fn convert(bot: &Bot, msg: &Message, document: &Document) -> anyhow::Resul
         .map(|inverted| -> ImageResult<InputMedia> {
             let img = prepared_img.convert_adaptive(*inverted);
             let mut cursor = Cursor::new(Vec::new());
-
             img.write_to(&mut cursor, ImageFormat::Png)?;
-            
-            let input_file = InputFile::memory(img.as_bytes()).file_name(file_name.to_owned());
 
+            let input_file = InputFile::memory(cursor.into_inner()).file_name(file_name.to_owned());
             let input_media_document = InputMediaDocument::new(input_file);
+
             Ok(InputMedia::Document(input_media_document))
         })
         .collect::<ImageResult<Vec<InputMedia>>>()?;
