@@ -17,7 +17,10 @@ async fn main() {
     teloxide::repl(bot, |bot: Bot, msg: Message| async move {
         let document = match msg.document() {
             Some(document) => document,
-            None => return Ok(()),
+            None => {
+                bot.send_message(msg.chat.id, "Send your image as document so I can convert it to adaptive monochrome versions").await?;
+                return Ok(());
+            }
         };
 
         if let Err(err) = convert(&bot, &msg, document).await {
